@@ -13,12 +13,21 @@ public final class Bicycle extends AbstractTransport {
     @Override
     public void startEngine() {
         // У велосипеда нет двигателя
+        if (engineRunning) {
+            System.out.println("Велосипед уже готов к движению!");
+            return;
+        }
         engineRunning = true;
         System.out.println("Велосипед " + name + " готов к движению");
+        System.out.println("Можно начинать крутить педали!");
     }
 
     @Override
     public void stopEngine() {
+        if (!engineRunning) {
+            System.out.println("Велосипед уже остановлен!");
+            return;
+        }
         engineRunning = false;
         System.out.println("Велосипед " + name + " остановлен");
     }
@@ -34,7 +43,13 @@ public final class Bicycle extends AbstractTransport {
 
     @Override
     public void stop() {
+        if (!engineRunning) {
+            System.out.println("Велосипед " + name + " уже остановлен");
+            return;
+        }
+
         System.out.println(name + " остановился");
+        engineRunning = false; // При остановке также "останавливаем двигатель"
     }
 
     @Override

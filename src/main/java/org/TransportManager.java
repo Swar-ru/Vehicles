@@ -95,11 +95,19 @@ public class TransportManager {
     private void manageTransport() {
         while (true) {
             System.out.println("\n=== УПРАВЛЕНИЕ ТРАНСПОРТОМ ===");
-            System.out.println("1. Запустить двигатель");
-            System.out.println("2. Начать движение/Набрать высоту");
 
-            if (currentTransport instanceof Airplane) {
+            // Для велосипеда
+            if (currentTransport instanceof Bicycle) {
+                System.out.println("1. Подготовить к движению");
+                System.out.println("2. Начать движение (крутить педали)");
+                System.out.println("3. Остановиться");
+                System.out.println("4. Назад в главное меню");
+            }
+            // Для самолета
+            else if (currentTransport instanceof Airplane) {
                 Airplane airplane = (Airplane) currentTransport;
+                System.out.println("1. Запустить двигатель");
+                System.out.println("2. Начать движение/Набрать высоту");
                 if (airplane.getCurrentAltitude() > 500) {
                     System.out.println("3. Начать снижение");
                 } else if (airplane.getCurrentAltitude() > 0) {
@@ -107,12 +115,18 @@ public class TransportManager {
                 } else {
                     System.out.println("3. Остановиться");
                 }
-            } else {
+                System.out.println("4. Остановить двигатель");
+                System.out.println("5. Назад в главное меню");
+            }
+            // Для остального транспорта
+            else {
+                System.out.println("1. Запустить двигатель");
+                System.out.println("2. Начать движение");
                 System.out.println("3. Остановиться");
+                System.out.println("4. Остановить двигатель");
+                System.out.println("5. Назад в главное меню");
             }
 
-            System.out.println("4. Остановить двигатель");
-            System.out.println("5. Назад в главное меню");
             System.out.println("=============================");
 
             int choice = getIntInput("Выберите действие: ");
@@ -129,23 +143,35 @@ public class TransportManager {
                         Airplane airplane = (Airplane) currentTransport;
                         if (airplane.getCurrentAltitude() > 500) {
                             stopMovement();
-                            airplane.startDescent(); // Новая опция - начать снижение
+                            airplane.startDescent();
                         } else if (airplane.getCurrentAltitude() > 0) {
                             stopMovement();
                             airplane.performLanding();
                         } else {
-                            airplane.stop();
-                            pause(2000); // Используем метод pause
+                            currentTransport.stop();
+                            pause(2000);
                         }
                     } else {
                         stopMovement();
                     }
                     break;
                 case 4:
-                    stopEngine();
+                    if (currentTransport instanceof Bicycle) {
+                        // Для велосипеда опция 4 - назад в главное меню
+                        return;
+                    } else {
+                        // Для остального транспорта опция 4 - остановить двигатель
+                        stopEngine();
+                    }
                     break;
                 case 5:
-                    return;
+                    // Для велосипеда нет опции 5, для остального транспорта - назад
+                    if (!(currentTransport instanceof Bicycle)) {
+                        return;
+                    } else {
+                        System.out.println("Неверный выбор!");
+                    }
+                    break;
                 default:
                     System.out.println("Неверный выбор!");
             }
@@ -154,17 +180,27 @@ public class TransportManager {
 
     private void startEngine() {
         if (currentTransport.isEngineRunning()) {
-            System.out.println("Двигатель уже запущен!");
+            if (currentTransport instanceof Bicycle) {
+                System.out.println("Велосипед уже готов к движению!");
+            } else {
+                System.out.println("Двигатель уже запущен!");
+            }
             return;
         }
+
         currentTransport.startEngine();
     }
 
     private void stopEngine() {
         if (!currentTransport.isEngineRunning()) {
-            System.out.println("Двигатель уже остановлен!");
+            if (currentTransport instanceof Bicycle) {
+                System.out.println("Велосипед уже остановлен!");
+            } else {
+                System.out.println("Двигатель уже остановлен!");
+            }
             return;
         }
+
         stopMovement();
         currentTransport.stopEngine();
     }
@@ -175,7 +211,13 @@ public class TransportManager {
             return;
         }
 
-        if (!currentTransport.isEngineRunning()) {
+        // Для велосипеда проверяем готовность к движению, а не двигатель
+        if (currentTransport instanceof Bicycle) {
+            if (!currentTransport.isEngineRunning()) {
+                System.out.println("Сначала подготовьте велосипед к движению!");
+                return;
+            }
+        } else if (!currentTransport.isEngineRunning()) {
             System.out.println("Сначала запустите двигатель!");
             return;
         }
