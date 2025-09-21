@@ -193,14 +193,21 @@ public class TransportManager {
 
     private void stopEngine() {
         if (!currentTransport.isEngineRunning()) {
-            if (currentTransport instanceof Bicycle) {
-                System.out.println("Велосипед уже остановлен!");
-            } else {
-                System.out.println("Двигатель уже остановлен!");
-            }
+            System.out.println("Двигатель уже остановлен!");
             return;
         }
 
+        // Для самолета в воздухе - только останавливаем двигатели, движение продолжается (снижение)
+        if (currentTransport instanceof Airplane) {
+            Airplane airplane = (Airplane) currentTransport;
+            if (airplane.getCurrentAltitude() > 0) {
+                // Только останавливаем двигатели, не трогаем движение
+                currentTransport.stopEngine();
+                return;
+            }
+        }
+
+        // Для всех остальных случаев останавливаем движение и двигатели
         stopMovement();
         currentTransport.stopEngine();
     }
@@ -211,13 +218,7 @@ public class TransportManager {
             return;
         }
 
-        // Для велосипеда проверяем готовность к движению, а не двигатель
-        if (currentTransport instanceof Bicycle) {
-            if (!currentTransport.isEngineRunning()) {
-                System.out.println("Сначала подготовьте велосипед к движению!");
-                return;
-            }
-        } else if (!currentTransport.isEngineRunning()) {
+        if (!currentTransport.isEngineRunning()) {
             System.out.println("Сначала запустите двигатель!");
             return;
         }
@@ -234,23 +235,21 @@ public class TransportManager {
         movementThread = new Thread(() -> {
             try {
                 while (isMoving && !currentTransport.isCrashed()) {
-                    Thread.sleep(1000); // Каждую секунду
+                    Thread.sleep(1000);
 
                     // Обновляем расстояние
-                    double speed = currentTransport.getMaxSpeed() / 3.6; // м/с
-                    currentTransport.updateDistance(speed / 1000); // км за секунду
+                    double speed = currentTransport.getMaxSpeed() / 3.6;
+                    currentTransport.updateDistance(speed / 1000);
 
                     // Для самолета также обновляем высоту при движении
                     if (currentTransport instanceof Airplane && currentTransport.isEngineRunning()) {
                         Airplane airplane = (Airplane) currentTransport;
-                        // Легкий набор высоты при движении
                         airplane.updateAltitude(5); // +5 м/с при движении
 
                         System.out.printf("Высота: %.0f м | Пройдено: %.1f км%n",
                                 airplane.getCurrentAltitude(),
                                 currentTransport.getDistanceTraveled());
                     } else {
-                        // Для других видов транспорта
                         System.out.printf("Пройдено: %.1f км%n",
                                 currentTransport.getDistanceTraveled());
                     }
